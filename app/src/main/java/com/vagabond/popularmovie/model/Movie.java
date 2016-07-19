@@ -6,6 +6,7 @@ import java.util.Date;
  * Created by HoaNV on 7/19/16.
  */
 public class Movie {
+    private long id;
     private String posterPath;
     private Boolean adult;
     private String overview;
@@ -13,6 +14,14 @@ public class Movie {
     private String originalTitle;
     private String title;
     private int voteCount;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getPosterPath() {
         return posterPath;
