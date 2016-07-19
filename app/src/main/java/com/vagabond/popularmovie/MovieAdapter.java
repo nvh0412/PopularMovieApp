@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.vagabond.popularmovie.model.Constant;
 import com.vagabond.popularmovie.model.Movie;
 
 import java.util.List;
@@ -47,7 +48,6 @@ public class MovieAdapter extends BaseAdapter {
 
     public void addAll(List<Movie> movieList) {
         this.movieList.addAll(movieList);
-        notifyDataSetChanged();
     }
 
     @Override
@@ -59,7 +59,7 @@ public class MovieAdapter extends BaseAdapter {
         }
 
         ImageView imageView = (ImageView) convertView.findViewById(R.id.list_item_movie_poster);
-        Picasso.with(mContext).load("http://image.tmdb.org/t/p/w185/" + movie.getPosterPath()).into(imageView);
+        Picasso.with(mContext).load(Constant.MOVIEDB_IMAGE_PATH + movie.getPosterPath()).into(imageView);
 
         return convertView;
     }

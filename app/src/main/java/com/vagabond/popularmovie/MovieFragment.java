@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
+import com.vagabond.popularmovie.model.Constant;
 import com.vagabond.popularmovie.model.Movie;
 
 import org.json.JSONArray;
@@ -72,6 +73,12 @@ public class MovieFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        updateMovies();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
             updateMovies();
@@ -98,7 +105,7 @@ public class MovieFragment extends Fragment {
             // Will contain the raw JSON response as a string.
             String movieJsonStr = null;
 
-            final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie/";
+            final String MOVIEDB_BASE_URL = Constant.MOVIEDB_PATH;
             final String APPID_PARAM = "api_key";
 
             try {
