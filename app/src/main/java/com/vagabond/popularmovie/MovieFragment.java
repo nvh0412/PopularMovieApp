@@ -1,6 +1,7 @@
 package com.vagabond.popularmovie;
 
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -15,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.vagabond.popularmovie.model.Constant;
@@ -62,6 +64,15 @@ public class MovieFragment extends Fragment {
 
         GridView mGridView = (GridView) rootView.findViewById(R.id.movie_gridview);
         mGridView.setAdapter(mMovieAdapter);
+
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent mIntent = new Intent(getActivity(), DetailActivity.class);
+                mIntent.putExtra(Constant.EXTRA_MOVIEID, mMovieAdapter.getItemId(position));
+                startActivity(mIntent);
+            }
+        });
 
         return rootView;
     }
@@ -158,7 +169,6 @@ public class MovieFragment extends Fragment {
             List<Movie> movieData = null;
             try {
                 movieData = getMovieDataFromJson(movieJsonStr);
-                Log.v(LOG_TAG, movieData.toString());
             } catch (JSONException e) {
                 Log.e(LOG_TAG, "Error parsing json", e);
             }
