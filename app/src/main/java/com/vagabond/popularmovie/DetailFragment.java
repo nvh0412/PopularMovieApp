@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.vagabond.popularmovie.model.Constant;
@@ -65,12 +66,15 @@ public class DetailFragment extends Fragment {
         WebService.getMovieDBService().getMovieDetail(mMovieId, BuildConfig.MOVIE_DB_API_KEY)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(movieDetail -> updateView(movieDetail),
-                        e -> handleError(e));
+                .subscribe(
+                    this::updateView,
+                    this::handleError
+                );
     }
 
     private void handleError(Throwable e) {
         Log.e(LOG_TAG, "Error of fetching movie detail" ,e);
+        Toast.makeText(getActivity(), "Something went wrong, please check your internet connection and try again!", Toast.LENGTH_LONG).show();
     }
 
     private void updateView(MovieDetail movieDetail) {

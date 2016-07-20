@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,8 +15,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.vagabond.popularmovie.model.Constant;
+import com.vagabond.popularmovie.model.MovieData;
 import com.vagabond.popularmovie.services.MovieDBService;
 import com.vagabond.popularmovie.services.WebService;
 
@@ -91,7 +94,15 @@ public class MovieFragment extends Fragment {
         movieDBService.getMovieData(orderType, BuildConfig.MOVIE_DB_API_KEY)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(userData -> userData.getResults())
-                .subscribe(results -> mMovieAdapter.addAll(results));
+                .map(MovieData::getResults)
+                .subscribe(
+                        results -> mMovieAdapter.addAll(results),
+                        this::handleError
+                );
+    }
+
+    private void handleError(Throwable e) {
+        Log.e(LOG_TAG, "Can't fetch movie list", e);
+        Toast.makeText(getActivity(), "Something went wrong, please check your internet connection and try again!", Toast.LENGTH_LONG).show();
     }
 }
