@@ -96,7 +96,10 @@ public class MovieFragment extends Fragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(MovieData::getResults)
                 .subscribe(
-                        results -> mMovieAdapter.addAll(results),
+                        results -> {
+                            mMovieAdapter.clear();
+                            mMovieAdapter.addAll(results);
+                        },
                         this::handleError
                 );
     }

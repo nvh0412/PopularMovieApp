@@ -20,6 +20,7 @@ public class MovieAdapter extends BaseAdapter {
     private final static String LOG_TAG = MovieAdapter.class.getSimpleName();
     private List<Movie> movieList;
     private Context mContext;
+    private ImageViewHolder mHolder;
 
     public MovieAdapter(Context context, List<Movie> movieList) {
         this.movieList = movieList;
@@ -59,9 +60,18 @@ public class MovieAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(mContext).inflate(R.layout.list_item_movie, parent, false);
         }
 
-        ImageView imageView = (ImageView) convertView.findViewById(R.id.list_item_movie_poster);
-        Picasso.with(mContext).load(Constant.MOVIEDB_IMAGE_PATH + movie.getPosterPath()).into(imageView);
+        mHolder = (ImageViewHolder) convertView.getTag();
+        if (mHolder == null) {
+            mHolder = new ImageViewHolder();
+            mHolder.imageView = (ImageView) convertView.findViewById(R.id.list_item_movie_poster);
+        }
 
+        Picasso.with(mContext).load(Constant.MOVIEDB_IMAGE_PATH + movie.getPosterPath()).into(mHolder.imageView);
+        convertView.setTag(mHolder);
         return convertView;
+    }
+
+    public class ImageViewHolder {
+        ImageView imageView;
     }
 }
