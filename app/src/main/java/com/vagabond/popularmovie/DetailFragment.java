@@ -1,8 +1,6 @@
 package com.vagabond.popularmovie;
 
 import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,16 +14,10 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.vagabond.popularmovie.model.Constant;
 import com.vagabond.popularmovie.model.MovieDetail;
+import com.vagabond.popularmovie.services.WebService;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by HoaNV on 7/19/16.
@@ -41,9 +33,7 @@ public class DetailFragment extends Fragment {
     private TextView voteAverageTV;
     private TextView overviewTV;
 
-    public DetailFragment() {
-        // Required empty public constructor
-    }
+    public DetailFragment() { }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,112 +62,25 @@ public class DetailFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        new FetchMovieDetailAsyncTask().execute(mMovieId);
+        WebService.getMovieDBService().getMovieDetail(mMovieId, BuildConfig.MOVIE_DB_API_KEY)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(movieDetail -> updateView(movieDetail),
+                        e -> handleError(e));
     }
 
-    public class FetchMovieDetailAsyncTask extends AsyncTask<Long, Void, MovieDetail> {
-        private final String LOG_TAG = FetchMovieDetailAsyncTask.class.getSimpleName();
-
-        @Override
-        protected MovieDetail doInBackground(Long... params) {
-            if (params.length == 0) {
-                return null;
-            }
-
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            // Will contain the raw JSON response as a string.
-            String movieJsonStr = null;
-
-            final String MOVIEDB_BASE_URL = Constant.MOVIEDB_PATH;
-            final String APPID_PARAM = "api_key";
-
-            try {
-                Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
-                        .appendPath(String.valueOf(params[0]))
-                        .appendQueryParameter(APPID_PARAM, BuildConfig.MOVIE_DB_API_KEY)
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    movieJsonStr = null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    movieJsonStr = null;
-                }
-                movieJsonStr = buffer.toString();
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                movieJsonStr = null;
-            } finally{
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            MovieDetail movieDetail = null;
-            try {
-                movieDetail = getMovieDetailFromJson(movieJsonStr);
-                Log.v(LOG_TAG, movieDetail.toString());
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, "Error parsing json", e);
-            }
-
-            return movieDetail;
-        }
-
-        @Override
-        protected void onPostExecute(MovieDetail movieDetail) {
-            super.onPostExecute(movieDetail);
-            if (movieDetail != null) {
-                Picasso.with(getActivity()).load(Constant.MOVIEDB_IMAGE_PATH + movieDetail.getPosterPath()).into(posterImageView);
-                titleTV.setText(movieDetail.getTitle());
-                releaseYearTV.setText(String.valueOf(movieDetail.getReleaseYear()));
-                voteAverageTV.setText(String.format("%.1f/10.0",movieDetail.getVoteAverage()));
-                durationTV.setText(String.valueOf(movieDetail.getRuntime()));
-                overviewTV.setText(movieDetail.getOverview());
-            }
-        }
+    private void handleError(Throwable e) {
+        Log.e(LOG_TAG, "Error of fetching movie detail" ,e);
     }
 
-    private MovieDetail getMovieDetailFromJson(String movieJsonStr) throws JSONException {
-        MovieDetail movieDetail = null;
-        if (movieJsonStr != null) {
-            JSONObject movieJsonObj = new JSONObject(movieJsonStr);
-            movieDetail = new MovieDetail();
-            movieDetail.setTitle(movieJsonObj.getString("title"));
-            movieDetail.setPosterPath(movieJsonObj.getString("poster_path"));
-            movieDetail.setOverview(movieJsonObj.getString("overview"));
-            movieDetail.setRuntime(movieJsonObj.getInt("runtime"));
-            movieDetail.setVoteAverage(movieJsonObj.getLong("vote_average"));
-            movieDetail.setReleaseYear(MovieUtils.getReadableReleaseYear(movieJsonObj.getString("release_date")));
+    private void updateView(MovieDetail movieDetail) {
+        if (movieDetail != null) {
+            Picasso.with(getActivity()).load(Constant.MOVIEDB_IMAGE_PATH + movieDetail.getPosterPath()).into(posterImageView);
+            titleTV.setText(movieDetail.getTitle());
+            releaseYearTV.setText(String.valueOf(MovieUtils.getReadableReleaseYear(movieDetail.getReleaseDate())));
+            voteAverageTV.setText(String.format("%.1f/10.0",movieDetail.getVoteAverage()));
+            durationTV.setText(String.valueOf(movieDetail.getRuntime()));
+            overviewTV.setText(movieDetail.getOverview());
         }
-
-        return movieDetail;
     }
 }

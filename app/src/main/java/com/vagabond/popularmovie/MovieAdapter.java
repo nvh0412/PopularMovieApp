@@ -48,6 +48,7 @@ public class MovieAdapter extends BaseAdapter {
 
     public void addAll(List<Movie> movieList) {
         this.movieList.addAll(movieList);
+        notifyDataSetChanged();
     }
 
     @Override

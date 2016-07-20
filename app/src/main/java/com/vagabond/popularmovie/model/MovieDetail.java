@@ -1,16 +1,32 @@
 package com.vagabond.popularmovie.model;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by HoaNV on 7/20/16.
  */
 public class MovieDetail {
-    private long id;
-    private String overview;
-    private float voteAverage;
-    private int runtime;
+    private Long id;
+
     private String title;
+
+    private String overview;
+
+    @SerializedName("poster_path")
     private String posterPath;
-    private int releaseYear;
+
+    @SerializedName("backdrop_path")
+    private String backdropPath;
+
+    @SerializedName("release_date")
+    private String releaseDate;
+
+    @SerializedName("vote_average")
+    private Float voteAverage;
+
+    @SerializedName("runtime")
+    private Integer runtime;
+
 
     public long getId() {
         return id;
@@ -18,14 +34,6 @@ public class MovieDetail {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public int getReleaseYear() {
-        return releaseYear;
-    }
-
-    public void setReleaseYear(int releaseYear) {
-        this.releaseYear = releaseYear;
     }
 
     public String getOverview() {
@@ -66,5 +74,21 @@ public class MovieDetail {
 
     public void setPosterPath(String posterPath) {
         this.posterPath = posterPath;
+    }
+
+    public String getBackdropPath() {
+        return backdropPath;
+    }
+
+    public void setBackdropPath(String backdropPath) {
+        this.backdropPath = backdropPath;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(String releaseDate) {
+        this.releaseDate = releaseDate;
     }
 }
