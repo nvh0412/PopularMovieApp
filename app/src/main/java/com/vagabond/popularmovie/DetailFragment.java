@@ -18,6 +18,7 @@ import com.vagabond.popularmovie.model.MovieDetail;
 import com.vagabond.popularmovie.services.WebService;
 
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -43,7 +44,7 @@ public class DetailFragment extends Fragment {
 
         Intent intent = getActivity().getIntent();
         Log.d(LOG_TAG, "" + intent.getLongExtra(Intent.EXTRA_TEXT, 0));
-        if (intent != null && intent.hasExtra(Constant.EXTRA_MOVIEID)) {
+        if (intent.hasExtra(Constant.EXTRA_MOVIEID)) {
             mMovieId = intent.getLongExtra(Constant.EXTRA_MOVIEID, 0);
         }
     }
@@ -67,8 +68,18 @@ public class DetailFragment extends Fragment {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    this::updateView,
-                    this::handleError
+                        new Action1<MovieDetail>() {
+                            @Override
+                            public void call(MovieDetail movieDetail) {
+                                updateView(movieDetail);
+                            }
+                        },
+                        new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                handleError(throwable);
+                            }
+                        }
                 );
     }
 

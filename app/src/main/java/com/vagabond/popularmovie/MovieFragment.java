@@ -14,17 +14,22 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
 import com.vagabond.popularmovie.model.Constant;
+import com.vagabond.popularmovie.model.Movie;
 import com.vagabond.popularmovie.model.MovieData;
 import com.vagabond.popularmovie.services.MovieDBService;
 import com.vagabond.popularmovie.services.WebService;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 
@@ -52,15 +57,18 @@ public class MovieFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_movie, container, false);
 
-        mMovieAdapter = new MovieAdapter(getActivity(), new ArrayList<>());
+        mMovieAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
 
         GridView mGridView = (GridView) rootView.findViewById(R.id.movie_gridview);
         mGridView.setAdapter(mMovieAdapter);
 
-        mGridView.setOnItemClickListener((parent, view, position, id) -> {
-            Intent mIntent = new Intent(getActivity(), DetailActivity.class);
-            mIntent.putExtra(Constant.EXTRA_MOVIEID, mMovieAdapter.getItemId(position));
-            startActivity(mIntent);
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent mIntent = new Intent(getActivity(), DetailActivity.class);
+                mIntent.putExtra(Constant.EXTRA_MOVIEID, mMovieAdapter.getItemId(position));
+                startActivity(mIntent);
+            }
         });
 
         return rootView;
@@ -94,13 +102,26 @@ public class MovieFragment extends Fragment {
         movieDBService.getMovieData(orderType, BuildConfig.MOVIE_DB_API_KEY)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(MovieData::getResults)
+                .map(new Func1<MovieData, List<Movie>>() {
+                    @Override
+                    public List<Movie> call(MovieData movieData) {
+                        return movieData.getResults();
+                    }
+                })
                 .subscribe(
-                        results -> {
-                            mMovieAdapter.clear();
-                            mMovieAdapter.addAll(results);
-                        },
-                        this::handleError
+                    new Action1<List<Movie>>() {
+                        @Override
+                        public void call(List<Movie> movieList) {
+                           mMovieAdapter.clear();
+                           mMovieAdapter.addAll(movieList);
+                        }
+                    },
+                    new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable e) {
+                            handleError(e);
+                        }
+                    }
                 );
     }
 

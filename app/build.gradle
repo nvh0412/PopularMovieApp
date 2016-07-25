@@ -10,20 +10,15 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        jackOptions {
-            enabled true
-        }
     }
     buildTypes {
         release {
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+    buildTypes.each {
+        it.buildConfigField 'String', 'MOVIE_DB_API_KEY', '"c60ff290eb3555c0df79e759f22cf14d"'
     }
 }
 
