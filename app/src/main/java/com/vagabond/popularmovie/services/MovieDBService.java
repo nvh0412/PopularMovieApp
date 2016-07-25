@@ -1,8 +1,8 @@
 package com.vagabond.popularmovie.services;
 
 import com.vagabond.popularmovie.model.Constant;
+import com.vagabond.popularmovie.model.Movie;
 import com.vagabond.popularmovie.model.MovieData;
-import com.vagabond.popularmovie.model.MovieDetail;
 
 import retrofit2.http.GET;
 import retrofit2.http.Path;
@@ -18,6 +18,6 @@ public interface MovieDBService {
     Observable<MovieData> getMovieData(@Path("order") String order, @Query(Constant.API_KEY) String apiKey);
 
     @GET("movie/{id}")
-    Observable<MovieDetail> getMovieDetail(@Path("id") long id, @Query(Constant.API_KEY) String apiKey);
+    Observable<Movie> getMovieDetail(@Path("id") long id, @Query(Constant.API_KEY) String apiKey);
 
 }

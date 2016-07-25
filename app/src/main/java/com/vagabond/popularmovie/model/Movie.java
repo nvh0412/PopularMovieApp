@@ -1,8 +1,5 @@
 package com.vagabond.popularmovie.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -11,11 +8,26 @@ import com.google.gson.annotations.SerializedName;
 public class Movie {
     private long id;
 
+    @SerializedName("title")
+    private String title;
+
+    @SerializedName("overview")
+    private String overview;
+
     @SerializedName("poster_path")
     private String posterPath;
 
     @SerializedName("backdrop_path")
     private String backdropPath;
+
+    @SerializedName("release_date")
+    private String releaseDate;
+
+    @SerializedName("vote_average")
+    private Float voteAverage;
+
+    @SerializedName("runtime")
+    private Integer runtime;
 
     public long getId() {
         return id;
@@ -40,4 +52,45 @@ public class Movie {
     public void setBackdropPath(String backdropPath) {
         this.backdropPath = backdropPath;
     }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(String releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public Float getVoteAverage() {
+        return voteAverage;
+    }
+
+    public void setVoteAverage(Float voteAverage) {
+        this.voteAverage = voteAverage;
+    }
+
+    public Integer getRuntime() {
+        return runtime;
+    }
+
+    public void setRuntime(Integer runtime) {
+        this.runtime = runtime;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getOverview() {
+        return overview;
+    }
+
+    public void setOverview(String overview) {
+        this.overview = overview;
+    }
+
 }

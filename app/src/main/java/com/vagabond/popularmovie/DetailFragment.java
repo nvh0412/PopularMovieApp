@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.vagabond.popularmovie.model.Constant;
-import com.vagabond.popularmovie.model.MovieDetail;
+import com.vagabond.popularmovie.model.Movie;
 import com.vagabond.popularmovie.services.WebService;
 
 import rx.android.schedulers.AndroidSchedulers;
@@ -68,9 +68,9 @@ public class DetailFragment extends Fragment {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        new Action1<MovieDetail>() {
+                        new Action1<Movie>() {
                             @Override
-                            public void call(MovieDetail movieDetail) {
+                            public void call(Movie movieDetail) {
                                 updateView(movieDetail);
                             }
                         },
@@ -88,7 +88,7 @@ public class DetailFragment extends Fragment {
         Toast.makeText(getActivity(), "Something went wrong, please check your internet connection and try again!", Toast.LENGTH_LONG).show();
     }
 
-    private void updateView(MovieDetail movieDetail) {
+    private void updateView(Movie movieDetail) {
         if (movieDetail != null) {
             Picasso.with(getActivity()).load(Constant.MOVIEDB_IMAGE_PATH + movieDetail.getPosterPath()).into(posterImageView);
             titleTV.setText(movieDetail.getTitle());
