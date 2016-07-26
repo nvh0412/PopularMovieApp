@@ -11,6 +11,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "movie.db";
     private static final int DATABASE_VERSION = 1;
+    private static final String LOG_TAG = MovieDbHelper.class.getSimpleName();
 
     public MovieDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -21,6 +22,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         final StringBuilder SQL_CREATE_MOVIE_TABLE = new StringBuilder("CREATE TABLE ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.TABLE_NAME).append(" (");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ");
+        SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_MOVIE_ID).append(" REAL NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_TITLE).append(" TEXT NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE).append(" TEXT NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_OVERVIEW).append(" TEXT NOT NULL, ");
@@ -31,8 +33,8 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_RUNTIME).append(" INTEGER NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_RELEASE_DATE).append(" INTEGER NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_POSTER_PATH).append(" TEXT NOT NULL, ");
-        SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH).append(" TEXT NOT NULL )");
-
+        SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH).append(" TEXT NOT NULL, ");
+        SQL_CREATE_MOVIE_TABLE.append("UNIQUE (" + MovieContract.MovieEntry.COLUMN_MOVIE_ID + ") ON CONFLICT REPLACE);");
         db.execSQL(SQL_CREATE_MOVIE_TABLE.toString());
     }
 

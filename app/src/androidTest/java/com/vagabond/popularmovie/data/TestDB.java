@@ -1,5 +1,6 @@
 package com.vagabond.popularmovie.data;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
@@ -64,6 +65,23 @@ public class TestDB extends AndroidTestCase {
     }
 
     public void testMovieTable() {
+        // First step: Get reference to writable database
+        SQLiteDatabase db = new MovieDbHelper(mContext).getWritableDatabase();
 
+        // Create ContentValues of what you want to insert
+        ContentValues cvMovieValue = TestUtilities.createMovieValues();
+
+        // Insert ContentValues into database and get a row ID back
+        long rowId = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, cvMovieValue);
+        assertTrue(rowId != -1);
+
+        // Query the database and receive a cursor back
+        Cursor cursor = db.query(MovieContract.MovieEntry.TABLE_NAME, null, null, null, null, null, null);
+        assertTrue("Error: This means the database has not been created correctly", cursor.moveToFirst());
+
+        TestUtilities.validateCursor("Error: The cursor did not match with content values", cursor, cvMovieValue);
+
+        cursor.close();
+        db.close();
     }
 }
