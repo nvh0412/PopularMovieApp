@@ -11,6 +11,12 @@ public class Movie {
     @SerializedName("title")
     private String title;
 
+    @SerializedName("original_title")
+    private String originalTitle;
+
+    @SerializedName("adult")
+    private Boolean adult;
+
     @SerializedName("overview")
     private String overview;
 
@@ -25,6 +31,12 @@ public class Movie {
 
     @SerializedName("vote_average")
     private Float voteAverage;
+
+    @SerializedName("vote_count")
+    private Float voteCount;
+
+    @SerializedName("popularity")
+    private Float popularity;
 
     @SerializedName("runtime")
     private Integer runtime;
@@ -70,6 +82,9 @@ public class Movie {
     }
 
     public Integer getRuntime() {
+        if (runtime == null) {
+            return 0;
+        }
         return runtime;
     }
 
@@ -93,4 +108,35 @@ public class Movie {
         this.overview = overview;
     }
 
+    public Boolean getAdult() {
+        return adult;
+    }
+
+    public void setAdult(Boolean adult) {
+        this.adult = adult;
+    }
+
+    public String getOriginalTitle() {
+        return originalTitle;
+    }
+
+    public void setOriginalTitle(String originalTitle) {
+        this.originalTitle = originalTitle;
+    }
+
+    public Float getVoteCount() {
+        return voteCount;
+    }
+
+    public void setVoteCount(Float voteCount) {
+        this.voteCount = voteCount;
+    }
+
+    public Float getPopularity() {
+        return popularity;
+    }
+
+    public void setPopularity(Float popularity) {
+        this.popularity = popularity;
+    }
 }

@@ -8,6 +8,9 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String orderType;
+    private static final String MOVIEFRAGMENT_TAG = "MOVIEFRAGMENT";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -15,8 +18,21 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new MovieFragment())
+                    .add(R.id.container, new MovieFragment(), MOVIEFRAGMENT_TAG)
                     .commit();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String orderType = Utility.getPreferredOrderType(this);
+        if (this.orderType != orderType) {
+            MovieFragment mf = (MovieFragment) getSupportFragmentManager().findFragmentByTag(MOVIEFRAGMENT_TAG);
+            if (mf != null) {
+                mf.onOrderChange();
+            }
+            this.orderType = orderType;
         }
     }
 

@@ -1,12 +1,16 @@
 package com.vagabond.popularmovie;
 
 
-import android.content.Intent;
+import android.content.ContentValues;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,18 +18,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
-import com.vagabond.popularmovie.model.Constant;
+import com.vagabond.popularmovie.data.MovieContract;
 import com.vagabond.popularmovie.model.Movie;
 import com.vagabond.popularmovie.model.MovieData;
 import com.vagabond.popularmovie.services.MovieDBService;
 import com.vagabond.popularmovie.services.WebService;
 
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Vector;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -36,9 +41,10 @@ import rx.schedulers.Schedulers;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MovieFragment extends Fragment {
+public class MovieFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String LOG_TAG = MovieFragment.class.getSimpleName();
+    private static final int MOVIE_LOADER = 1;
     private MovieAdapter mMovieAdapter;
 
     public MovieFragment() {
@@ -52,25 +58,21 @@ public class MovieFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        getLoaderManager().initLoader(MOVIE_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_movie, container, false);
 
-        mMovieAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
+        mMovieAdapter = new MovieAdapter(getActivity(), null, 0);
 
         GridView mGridView = (GridView) rootView.findViewById(R.id.movie_gridview);
         mGridView.setAdapter(mMovieAdapter);
-
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent mIntent = new Intent(getActivity(), DetailActivity.class);
-                mIntent.putExtra(Constant.EXTRA_MOVIEID, mMovieAdapter.getItemId(position));
-                startActivity(mIntent);
-            }
-        });
-
         return rootView;
     }
 
@@ -83,13 +85,13 @@ public class MovieFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        updateMovies();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
             updateMovies();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -112,13 +114,44 @@ public class MovieFragment extends Fragment {
                     new Action1<List<Movie>>() {
                         @Override
                         public void call(List<Movie> movieList) {
-                           mMovieAdapter.clear();
-                           mMovieAdapter.addAll(movieList);
+                            Vector<ContentValues> cvVector = new Vector<>(movieList.size());
+
+                            for (Movie movie : movieList) {
+                                ContentValues cv = new ContentValues();
+                                cv.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, movie.getId());
+                                cv.put(MovieContract.MovieEntry.COLUMN_TITLE, movie.getTitle());
+                                cv.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, movie.getOriginalTitle());
+                                cv.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, movie.getOverview());
+                                cv.put(MovieContract.MovieEntry.COLUMN_ADULT, movie.getAdult());
+                                cv.put(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH, movie.getBackdropPath());
+                                cv.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH, movie.getPosterPath());
+                                cv.put(MovieContract.MovieEntry.COLUMN_POPULARITY, movie.getPopularity());
+                                cv.put(MovieContract.MovieEntry.COLUMN_VOTE_COUNT, movie.getVoteCount());
+                                cv.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.getVoteAverage());
+                                cv.put(MovieContract.MovieEntry.COLUMN_RUNTIME, movie.getRuntime());
+                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD");
+                                try {
+                                    cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, sdf.parse(movie.getReleaseDate()).getTime());
+                                } catch (ParseException e) {
+                                    Log.e(LOG_TAG, "Can't parse time", e);
+                                }
+                                cvVector.add(cv);
+                            }
+
+                            int inserted = 0;
+                            if (movieList.size() > 0) {
+                                ContentValues[] cvArray = new ContentValues[cvVector.size()];
+                                cvVector.toArray(cvArray);
+                                inserted = getActivity().getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
+                            }
+
+                            Log.d(LOG_TAG, "Sync Data complete. " + inserted + " inserted.");
                         }
                     },
                     new Action1<Throwable>() {
                         @Override
                         public void call(Throwable e) {
+                            Log.e(LOG_TAG, "Error: Can't sync data from API", e);
                             handleError(e);
                         }
                     }
@@ -128,5 +161,28 @@ public class MovieFragment extends Fragment {
     private void handleError(Throwable e) {
         Log.e(LOG_TAG, "Can't fetch movie list", e);
         Toast.makeText(getActivity(), "Something went wrong, please check your internet connection and try again!", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String orderType = Utility.getPreferredOrderType(getActivity());
+        String order = orderType.equals("popular") ? "popularity" : "vote_average";
+
+        return new CursorLoader(getActivity(), MovieContract.MovieEntry.CONTENT_URI, null, null, null, order + " DESC");
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mMovieAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mMovieAdapter.swapCursor(null);
+    }
+
+    public void onOrderChange() {
+        updateMovies();
+        getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
     }
 }
