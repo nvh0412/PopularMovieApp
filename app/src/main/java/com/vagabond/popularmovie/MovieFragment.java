@@ -2,8 +2,10 @@ package com.vagabond.popularmovie;
 
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -18,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -47,6 +50,8 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     private static final int MOVIE_LOADER = 1;
     private MovieAdapter mMovieAdapter;
 
+    static final int COL_MOVIE_ID = 1;
+
     public MovieFragment() {
         // Required empty public constructor
     }
@@ -73,6 +78,19 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
         GridView mGridView = (GridView) rootView.findViewById(R.id.movie_gridview);
         mGridView.setAdapter(mMovieAdapter);
+
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                if (null != cursor && cursor.moveToPosition(position)) {
+                    Uri uri = MovieContract.MovieEntry.buildMovieWithMovieId(cursor.getLong(COL_MOVIE_ID));
+                    Intent intent = new Intent(getActivity(), DetailActivity.class).setData(uri);
+                    startActivity(intent);
+                }
+            }
+        });
+
         return rootView;
     }
 
@@ -80,6 +98,11 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.moviefragment, menu);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override

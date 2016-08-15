@@ -1,33 +1,58 @@
 package com.vagabond.popularmovie;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+import com.vagabond.popularmovie.data.MovieContract;
 import com.vagabond.popularmovie.model.Constant;
-import com.vagabond.popularmovie.model.Movie;
-import com.vagabond.popularmovie.services.WebService;
-
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 /**
  * Created by HoaNV on 7/19/16.
  */
-public class DetailFragment extends Fragment {
+public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
-    private Long mMovieId;
+    private static final String[] MOVIES_COLUMNS = {
+            MovieContract.MovieEntry.TABLE_NAME + "." + MovieContract.MovieEntry._ID,
+            MovieContract.MovieEntry.COLUMN_MOVIE_ID,
+            MovieContract.MovieEntry.COLUMN_TITLE,
+            MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE,
+            MovieContract.MovieEntry.COLUMN_ADULT,
+            MovieContract.MovieEntry.COLUMN_POSTER_PATH,
+            MovieContract.MovieEntry.COLUMN_BACKDROP_PATH,
+            MovieContract.MovieEntry.COLUMN_POPULARITY,
+            MovieContract.MovieEntry.COLUMN_RELEASE_DATE,
+            MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE,
+            MovieContract.MovieEntry.COLUMN_OVERVIEW,
+            MovieContract.MovieEntry.COLUMN_RUNTIME
+    };
+    static final int COL_MOVIE_ID = 1;
+    static final int COL_MOVIE_TITLE = 2;
+    static final int COL_ORIGINAL_TITLE = 3;
+    static final int COL_ADULT = 4;
+    static final int COL_POSTER_PATH = 5;
+    static final int COL_BACKDROP_PATH = 6;
+    static final int COL_POPULARITY = 7;
+    static final int COL_RELEASE_DATE = 8;
+    static final int COL_VOTE_AVERAGE = 9;
+    static final int COL_OVERVIEW = 10;
+    static final int COL_RUNTIME = 11;
+    private static final int DETAIL_LOADER = 0;
+
+    private Uri mUriData;
     private ImageView posterImageView;
     private TextView titleTV;
     private TextView releaseYearTV;
@@ -43,10 +68,13 @@ public class DetailFragment extends Fragment {
         setHasOptionsMenu(true);
 
         Intent intent = getActivity().getIntent();
-        Log.d(LOG_TAG, "" + intent.getLongExtra(Intent.EXTRA_TEXT, 0));
-        if (intent.hasExtra(Constant.EXTRA_MOVIEID)) {
-            mMovieId = intent.getLongExtra(Constant.EXTRA_MOVIEID, 0);
-        }
+        mUriData = intent.getData();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
     }
 
     @Override
@@ -62,40 +90,37 @@ public class DetailFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        WebService.getMovieDBService().getMovieDetail(mMovieId, BuildConfig.MOVIE_DB_API_KEY)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        new Action1<Movie>() {
-                            @Override
-                            public void call(Movie movieDetail) {
-                                updateView(movieDetail);
-                            }
-                        },
-                        new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                handleError(throwable);
-                            }
-                        }
-                );
-    }
-
-    private void handleError(Throwable e) {
-        Log.e(LOG_TAG, "Error of fetching movie detail" ,e);
-        Toast.makeText(getActivity(), "Something went wrong, please check your internet connection and try again!", Toast.LENGTH_LONG).show();
-    }
-
-    private void updateView(Movie movieDetail) {
-        if (movieDetail != null) {
-            Picasso.with(getActivity()).load(Constant.MOVIEDB_IMAGE_PATH + movieDetail.getPosterPath()).into(posterImageView);
-            titleTV.setText(movieDetail.getTitle());
-            releaseYearTV.setText(String.valueOf(MovieUtils.getReadableReleaseYear(movieDetail.getReleaseDate())));
-            voteAverageTV.setText(String.format("%.1f/10.0",movieDetail.getVoteAverage()));
-            durationTV.setText(String.valueOf(movieDetail.getRuntime()));
-            overviewTV.setText(movieDetail.getOverview());
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        if (mUriData != null) {
+            return new CursorLoader(getActivity(), mUriData, MOVIES_COLUMNS, null, null, null);
         }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data != null && data.moveToFirst()) {
+            String posterPath = data.getString(COL_POSTER_PATH);
+            Picasso.with(getActivity()).load(Constant.MOVIEDB_IMAGE_PATH + posterPath).into(posterImageView);
+
+            String title = data.getString(COL_MOVIE_TITLE);
+            titleTV.setText(title);
+
+//            releaseYearTV.setText(String.valueOf(MovieUtils.getReadableReleaseYear(movieDetail.getReleaseDate())));
+
+            Double voteAverage = data.getDouble(COL_VOTE_AVERAGE);
+            voteAverageTV.setText(String.format("%.1f/10.0", voteAverage));
+
+            int runtime = data.getInt(COL_RUNTIME);
+            durationTV.setText(String.valueOf(runtime));
+
+            String overview = data.getString(COL_OVERVIEW);
+            overviewTV.setText(overview);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

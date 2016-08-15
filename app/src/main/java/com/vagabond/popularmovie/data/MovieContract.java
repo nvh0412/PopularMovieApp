@@ -51,7 +51,7 @@ public class MovieContract {
         }
 
         public static String getMovieIdFromUri(Uri uri) {
-            return uri.getQueryParameter(COLUMN_MOVIE_ID);
+            return uri.getPathSegments().get(1);
         }
     }
 }
