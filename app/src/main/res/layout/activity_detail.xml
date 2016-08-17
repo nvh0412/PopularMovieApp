@@ -5,6 +5,6 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              tools:context="com.vagabond.popularmovie.DetailActivity"
-             android:id="@+id/container">
-
+             tools:ignore="MergeRootFrame"
+             android:id="@+id/movie_detail_container">
 </FrameLayout>

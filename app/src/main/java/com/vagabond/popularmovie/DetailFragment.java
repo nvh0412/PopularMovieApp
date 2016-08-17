@@ -1,6 +1,5 @@
 package com.vagabond.popularmovie;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -51,6 +50,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     static final int COL_OVERVIEW = 10;
     static final int COL_RUNTIME = 11;
     private static final int DETAIL_LOADER = 0;
+    public static final String DETAIL_URI = "DETAIL_URI";
 
     private Uri mUriData;
     private ImageView posterImageView;
@@ -66,9 +66,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        Intent intent = getActivity().getIntent();
-        mUriData = intent.getData();
     }
 
     @Override
@@ -79,6 +76,13 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Bundle argument = getArguments();
+        if (null != argument) {
+            mUriData = argument.getParcelable(DETAIL_URI);
+        } else {
+            mUriData = getActivity().getIntent().getData();
+        }
+
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         posterImageView = (ImageView) rootView.findViewById(R.id.posterImg);
         releaseYearTV = (TextView) rootView.findViewById(R.id.releaseYear);

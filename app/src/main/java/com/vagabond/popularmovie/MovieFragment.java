@@ -2,7 +2,6 @@ package com.vagabond.popularmovie;
 
 
 import android.content.ContentValues;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -84,9 +83,7 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                 if (null != cursor && cursor.moveToPosition(position)) {
-                    Uri uri = MovieContract.MovieEntry.buildMovieWithMovieId(cursor.getLong(COL_MOVIE_ID));
-                    Intent intent = new Intent(getActivity(), DetailActivity.class).setData(uri);
-                    startActivity(intent);
+                    ((Callback)getActivity()).onItemSelected(MovieContract.MovieEntry.buildMovieWithMovieId(cursor.getLong(COL_MOVIE_ID)));
                 }
             }
         });
@@ -207,5 +204,9 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     public void onOrderChange() {
         updateMovies();
         getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
+    }
+
+    public interface Callback {
+        public void onItemSelected(Uri movieIdUri);
     }
 }
