@@ -2,11 +2,9 @@ package com.vagabond.popularmovie;
 
 
 import android.content.ContentValues;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -29,8 +27,6 @@ import com.vagabond.popularmovie.model.MovieData;
 import com.vagabond.popularmovie.services.MovieDBService;
 import com.vagabond.popularmovie.services.WebService;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Vector;
 
@@ -47,7 +43,9 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
     private static final String LOG_TAG = MovieFragment.class.getSimpleName();
     private static final int MOVIE_LOADER = 1;
+    public static String MOVIE_ORDER = "MOVIE_ORDER";
     private MovieAdapter mMovieAdapter;
+    private String mOrderType;
 
     static final int COL_MOVIE_ID = 1;
 
@@ -110,16 +108,13 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
-            updateMovies();
+            updateMovies(mOrderType);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateMovies() {
-        SharedPreferences sharePrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String orderType = sharePrefs.getString(getString(R.string.pref_order_key), "popular");
-
+    private void updateMovies(String orderType) {
         MovieDBService movieDBService = WebService.getMovieDBService();
         movieDBService.getMovieData(orderType, BuildConfig.MOVIE_DB_API_KEY)
                 .subscribeOn(Schedulers.newThread())
@@ -149,12 +144,7 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
                                 cv.put(MovieContract.MovieEntry.COLUMN_VOTE_COUNT, movie.getVoteCount());
                                 cv.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.getVoteAverage());
                                 cv.put(MovieContract.MovieEntry.COLUMN_RUNTIME, movie.getRuntime());
-                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD");
-                                try {
-                                    cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, sdf.parse(movie.getReleaseDate()).getTime());
-                                } catch (ParseException e) {
-                                    Log.e(LOG_TAG, "Can't parse time", e);
-                                }
+                                cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, movie.getReleaseDate());
                                 cvVector.add(cv);
                             }
 
@@ -201,12 +191,12 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
         mMovieAdapter.swapCursor(null);
     }
 
-    public void onOrderChange() {
-        updateMovies();
+    public void onOrderChange(String orderType) {
+        updateMovies(orderType);
         getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
     }
 
     public interface Callback {
-        public void onItemSelected(Uri movieIdUri);
+        void onItemSelected(Uri movieIdUri);
     }
 }

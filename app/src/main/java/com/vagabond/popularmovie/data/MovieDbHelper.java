@@ -22,7 +22,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         final StringBuilder SQL_CREATE_MOVIE_TABLE = new StringBuilder("CREATE TABLE ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.TABLE_NAME).append(" (");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ");
-        SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_MOVIE_ID).append(" REAL NOT NULL, ");
+        SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_MOVIE_ID).append(" TEXT NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_TITLE).append(" TEXT NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE).append(" TEXT NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_OVERVIEW).append(" TEXT NOT NULL, ");
@@ -31,7 +31,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE).append(" REAL NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_POPULARITY).append(" REAL NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_RUNTIME).append(" INTEGER NOT NULL, ");
-        SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_RELEASE_DATE).append(" INTEGER NOT NULL, ");
+        SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_RELEASE_DATE).append(" TEXT NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_POSTER_PATH).append(" TEXT NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH).append(" TEXT NOT NULL, ");
         SQL_CREATE_MOVIE_TABLE.append("UNIQUE (" + MovieContract.MovieEntry.COLUMN_MOVIE_ID + ") ON CONFLICT REPLACE);");

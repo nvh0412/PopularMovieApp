@@ -3,21 +3,43 @@ package com.vagabond.popularmovie;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.facebook.stetho.Stetho;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieFragment.Callback {
 
     private static final String DETAILFRAGMENT_TAG = "DETAILFRAGMENT";
-    private String orderType;
     private static final String MOVIEFRAGMENT_TAG = "MOVIEFRAGMENT";
+    private String orderType;
+
     private boolean mTwoPane;
+    private MovieFragment mfPopular;
+    private MovieFragment mfTopRated;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        Stetho.initialize(
+                Stetho.newInitializerBuilder(this)
+                        .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+                        .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this))
+                        .build());
 
         if (findViewById(R.id.movie_detail_container) != null) {
             mTwoPane = true;
@@ -29,24 +51,19 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
             }
         } else {
             mTwoPane = false;
+            ViewPager viewPager = (ViewPager)findViewById(R.id.viewpager);
+            if (viewPager != null) {
+                setupViewPager(viewPager);
+            }
+
+            TabLayout tabLayout = (TabLayout)findViewById(R.id.tabs);
+            tabLayout.setupWithViewPager(viewPager);
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        String orderType = Utility.getPreferredOrderType(this);
-        if (orderType != null && !orderType.equals(this.orderType) ) {
-            MovieFragment mf = (MovieFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_movie);
-            if (mf != null) {
-                mf.onOrderChange();
-            }
-//            DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
-//            if (null != df) {
-//                df.onMovieIDChange();
-//            }
-            this.orderType = orderType;
-        }
     }
 
     @Override
@@ -78,6 +95,55 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
         } else {
             Intent intent = new Intent(this, DetailActivity.class).setData(movieIdUri);
             startActivity(intent);
+        }
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        mfPopular = new MovieFragment();
+        mfTopRated = new MovieFragment();
+        Adapter adapter = new Adapter(getSupportFragmentManager());
+        adapter.addFragment(mfPopular, getString(R.string.pref_order_popular_label));
+        adapter.addFragment(mfTopRated, getString(R.string.pref_order_toprated_label));
+        viewPager.setAdapter(adapter);
+
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0) {
+                    mfPopular.onOrderChange(getString(R.string.pref_order_popular));
+                } else {
+                    mfTopRated.onOrderChange(getString(R.string.pref_order_toprated));
+                }
+            }
+        });
+    }
+
+    static class Adapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragments = new ArrayList<>();
+        private final List<String> mFragmentTitles = new ArrayList<>();
+
+        public Adapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragments.add(fragment);
+            mFragmentTitles.add(title);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragments.size();
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitles.get(position);
         }
     }
 }
