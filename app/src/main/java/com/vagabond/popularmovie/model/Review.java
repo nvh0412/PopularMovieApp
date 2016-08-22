@@ -9,6 +9,11 @@ public class Review {
     private String content;
     private String url;
 
+    public Review(String author, String content) {
+        this.author = author;
+        this.content = content;
+    }
+
     public String getId() {
         return id;
     }

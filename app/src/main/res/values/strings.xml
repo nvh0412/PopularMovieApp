@@ -12,4 +12,6 @@
     <string name="pref_order_key">order_by</string>
     <string name="action_refresh">Refresh</string>
     <string name="detail_activity_title">Detail</string>
+    <string name="reviews">REVIEWS</string>
+    <string name="trailers">TRAILERS</string>
 </resources>

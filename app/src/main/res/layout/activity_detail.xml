@@ -38,21 +38,23 @@
                 app:layout_collapseMode="pin" />
 
         </android.support.design.widget.CollapsingToolbarLayout>
-
     </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                     xmlns:tools="http://schemas.android.com/tools"
-                     android:orientation="vertical"
-                     android:layout_width="match_parent"
-                     android:layout_height="match_parent"
-                     tools:context="com.vagabond.popularmovie.DetailActivity"
-                     tools:ignore="MergeRootFrame"
-                     android:id="@+id/movie_detail_container">
-        </FrameLayout>
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                         xmlns:tools="http://schemas.android.com/tools"
+                         android:orientation="vertical"
+                         android:layout_width="match_parent"
+                         android:layout_height="wrap_content"
+                         tools:context="com.vagabond.popularmovie.DetailActivity"
+                         tools:ignore="MergeRootFrame"
+                         android:id="@+id/movie_detail_container">
+            </FrameLayout>
     </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

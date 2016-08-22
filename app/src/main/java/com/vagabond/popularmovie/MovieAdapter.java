@@ -53,6 +53,4 @@ public class MovieAdapter extends CursorAdapter {
         Picasso.with(mContext).load(Constant.MOVIEDB_IMAGE_PATH + movie.getPosterPath()).into(mHolder.imageView);
         view.setTag(mHolder);
     }
-
-
 }

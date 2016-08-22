@@ -1,70 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true">
-    <RelativeLayout
+<RelativeLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/activity_vertical_margin"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ImageView
+        android:layout_width="140dip"
+        android:layout_height="210dip"
+        android:id="@+id/posterImg"
+        android:scaleType="fitXY"/>
+
+    <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/activity_vertical_margin">
-
-        <ImageView
-            android:layout_width="140dip"
-            android:layout_height="210dip"
-            android:id="@+id/posterImg"
-            android:scaleType="fitXY"/>
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/posterImg"
-            android:layout_marginLeft="@dimen/movie_info_margin">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:id="@+id/title"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/releaseYear"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/runtime"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:id="@+id/voteAverage"/>
-
-            <Button
-                android:id="@+id/fav_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Add"/>
-        </LinearLayout>
+        android:layout_toRightOf="@+id/posterImg"
+        android:layout_marginLeft="@dimen/movie_info_margin">
 
         <TextView
-            android:id="@+id/overview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_below="@id/posterImg"/>
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/title"/>
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tab_detail"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/releaseYear"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/runtime"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/voteAverage"/>
+
+        <Button
+            android:id="@+id/fav_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/overview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_below="@id/posterImg"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/trailer_list_layout"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/overview"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin">
+
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="top" />
-    </RelativeLayout>
-</ScrollView>
+            android:text="@string/trailers"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/review_list_layout"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/trailer_list_layout"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/reviews"/>
+    </LinearLayout>
+</RelativeLayout>

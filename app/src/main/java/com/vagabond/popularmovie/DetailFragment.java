@@ -1,5 +1,6 @@
 package com.vagabond.popularmovie;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -68,6 +70,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     static final int COL_RELEASE_DATE = 8;
     static final int COL_VOTE_AVERAGE = 9;
     static final int COL_OVERVIEW = 10;
+    public static final String MOVIE_ID = "MOVIE_ID";
 
     private Uri mUriData;
     private ImageView posterImageView;
@@ -77,7 +80,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private TextView overviewTV;
     private ImageView backDropImageView;
     private boolean isTwoPanel;
-
+    private LinearLayout reviewLayout;
+    private LinearLayout trailerLayout;
 
     public DetailFragment() { }
 
@@ -97,6 +101,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
+        reviewLayout = (LinearLayout) rootView.findViewById(R.id.review_list_layout);
+        trailerLayout = (LinearLayout) rootView.findViewById(R.id.trailer_list_layout);
+
         Bundle argument = getArguments();
         if (null != argument) {
             mUriData = argument.getParcelable(DETAIL_URI);
@@ -112,10 +119,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         voteAverageTV = (TextView) rootView.findViewById(R.id.voteAverage);
         overviewTV = (TextView) rootView.findViewById(R.id.overview);
         titleTV = (TextView) rootView.findViewById(R.id.title);
-        Button addFavouritedBtn = (Button) rootView.findViewById(R.id.fav_btn);
+        Button addFavouriteBtn = (Button) rootView.findViewById(R.id.fav_btn);
 
-        if (addFavouritedBtn != null) {
-            addFavouritedBtn.setOnClickListener(new View.OnClickListener() {
+        if (addFavouriteBtn != null) {
+            addFavouriteBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     SharedPreferences favPref = getActivity().getSharedPreferences(FAV_PREFS, 0);
@@ -123,6 +130,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 }
             });
         }
+
+        fetchMovieReviews(MovieContract.MovieEntry.getMovieIdFromUri(mUriData), WebService.getMovieDBService());
+        fetchMovieTrailers(MovieContract.MovieEntry.getMovieIdFromUri(mUriData), WebService.getMovieDBService());
         return rootView;
     }
 
@@ -158,8 +168,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             String overview = data.getString(COL_OVERVIEW);
             overviewTV.setText(overview);
 
-            fetchMovieStuff(data.getString(COL_MOVIE_ID));
-
             String backDropPath = data.getString(COL_BACKDROP_PATH);
             Picasso.with(getActivity()).load(Constant.MOVIEDB_IMAGE_PATH + backDropPath).into(backDropImageView);
         }
@@ -167,33 +175,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) { }
-
-    private void fetchMovieStuff(String movieId) {
-        Log.d(LOG_TAG, "Fetching data of movie " + movieId);
-        MovieDBService movieDBService = WebService.getMovieDBService();
-        fetchMovieReviews(movieId, movieDBService);
-        fetchMovieTrailers(movieId, movieDBService);
-    }
-
-    private void fetchMovieReviews(String movieId, MovieDBService movieDBService) {
-        movieDBService.getReviewsByMovie(movieId, BuildConfig.MOVIE_DB_API_KEY)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(new Func1<ReviewData, List<Review>>() {
-                    @Override
-                    public List<Review> call(ReviewData reviewData) {
-                        return reviewData.getResults();
-                    }
-                })
-                .subscribe(
-                        new Action1<List<Review>>() {
-                            @Override
-                            public void call(List<Review> reviews) {
-                                Log.d(LOG_TAG, "List of all reviews " + reviews);
-                            }
-                        }
-                );
-    }
 
     private void fetchMovieTrailers(String movieId, MovieDBService movieDBService) {
         movieDBService.getTrailersByMovie(movieId, BuildConfig.MOVIE_DB_API_KEY)
@@ -209,7 +190,54 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                         new Action1<List<Trailer>>() {
                             @Override
                             public void call(List<Trailer> trailers) {
-                                Log.d(LOG_TAG, "List of all trailer " + trailers);
+                                if (trailers != null) {
+                                    LayoutInflater inflater = LayoutInflater.from(getActivity());
+                                    for (final Trailer tl : trailers) {
+                                        View tlLayout = inflater.inflate(R.layout.list_item_trailer, null, false);
+                                        TextView trailteTitle = (TextView) tlLayout.findViewById(R.id.trailer_title);
+                                        trailteTitle.setText(tl.getName());
+
+                                        tlLayout.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + tl.getKey())));
+                                            }
+                                        });
+
+                                        trailerLayout.addView(tlLayout);
+                                    }
+                                }
+                            }
+                        }
+                );
+    }
+
+    private void fetchMovieReviews(String movieId, MovieDBService movieDBService) {
+        Log.d(LOG_TAG, "fetchMovieReviews with " + movieId);
+        movieDBService.getReviewsByMovie(movieId, BuildConfig.MOVIE_DB_API_KEY)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<ReviewData, List<Review>>() {
+                    @Override
+                    public List<Review> call(ReviewData reviewData) {
+                        return reviewData.getResults();
+                    }
+                })
+                .subscribe(
+                        new Action1<List<Review>>() {
+                            @Override
+                            public void call(List<Review> reviews) {
+                                if (reviews != null) {
+                                    LayoutInflater inflater = LayoutInflater.from(getActivity());
+                                    for (Review rv : reviews) {
+                                        View rvLayout = inflater.inflate(R.layout.list_item_review, null, false);
+                                        TextView authorTv = (TextView) rvLayout.findViewById(R.id.author_tv);
+                                        authorTv.setText(rv.getAuthor());
+                                        TextView descriptionTV = (TextView) rvLayout.findViewById(R.id.description_tv);
+                                        descriptionTV.setText(rv.getContent());
+                                        reviewLayout.addView(rvLayout);
+                                    }
+                                }
                             }
                         }
                 );
