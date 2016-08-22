@@ -2,6 +2,7 @@ package com.vagabond.popularmovie;
 
 
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import com.vagabond.popularmovie.services.MovieDBService;
 import com.vagabond.popularmovie.services.WebService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import rx.android.schedulers.AndroidSchedulers;
@@ -43,10 +45,9 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
     private static final String LOG_TAG = MovieFragment.class.getSimpleName();
     private static final int MOVIE_LOADER = 1;
-    public static String MOVIE_ORDER = "MOVIE_ORDER";
     private MovieAdapter mMovieAdapter;
     private String mOrderType;
-
+    private boolean isFavourite;
     static final int COL_MOVIE_ID = 1;
 
     public MovieFragment() {
@@ -57,6 +58,12 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        Bundle args = getArguments();
+        if (args != null) {
+            mOrderType = args.getString("ORDER_TYPE");
+            isFavourite = args.getBoolean("FILTER_TYPE");
+        }
     }
 
     @Override
@@ -175,10 +182,31 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String orderType = Utility.getPreferredOrderType(getActivity());
-        String order = orderType.equals("popular") ? "popularity" : "vote_average";
+        if (isFavourite) {
+            SharedPreferences sp = getActivity().getSharedPreferences("FAV_PREFS", 0);
+            Set<String> keySet = sp.getAll().keySet();
+            return new CursorLoader(getActivity(),
+                    MovieContract.MovieEntry.CONTENT_URI, null,
+                    MovieContract.MovieEntry.COLUMN_MOVIE_ID + " IN (" + makeQueryMovieID(keySet) + ")",
+                    null,
+                    null);
+        } else {
+            String order = "popular".equals(mOrderType) ? "popularity" : "vote_average";
+            return new CursorLoader(getActivity(),
+                    MovieContract.MovieEntry.CONTENT_URI, null, null, null, order + " DESC");
+        }
+    }
 
-        return new CursorLoader(getActivity(), MovieContract.MovieEntry.CONTENT_URI, null, null, null, order + " DESC");
+    private String makeQueryMovieID(Set<String> keySet) {
+        StringBuilder str = new StringBuilder();
+        for (String key : keySet) {
+            str.append(key);
+            str.append(",");
+        }
+        if (str.length() > 0) {
+            str.deleteCharAt(str.length() - 1);
+        }
+        return str.toString();
     }
 
     @Override
@@ -189,11 +217,6 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mMovieAdapter.swapCursor(null);
-    }
-
-    public void onOrderChange(String orderType) {
-        updateMovies(orderType);
-        getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
     }
 
     public interface Callback {

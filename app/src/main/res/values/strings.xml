@@ -9,6 +9,7 @@
     <string name="pref_order_toprated">top_rated</string>
     <string name="pref_order_popular_label">Popular</string>
     <string name="pref_order_toprated_label">Top Rated</string>
+    <string name="pref_order_favourite_label">Favourite</string>
     <string name="pref_order_key">order_by</string>
     <string name="action_refresh">Refresh</string>
     <string name="detail_activity_title">Detail</string>

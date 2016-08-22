@@ -16,11 +16,10 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
 
     private static final String DETAILFRAGMENT_TAG = "DETAILFRAGMENT";
     private static final String MOVIEFRAGMENT_TAG = "MOVIEFRAGMENT";
-    private String orderType;
 
     private boolean mTwoPane;
-    private MovieFragment mfPopular;
-    private MovieFragment mfTopRated;
+    private String ORDER_TYPE = "ORDER_TYPE";
+    private String FILTER_TYPE = "FILTER_TYPE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +34,14 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
                         .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this))
                         .build());
 
+        ViewPager viewPager = (ViewPager)findViewById(R.id.viewpager);
+        if (viewPager != null) {
+            setupViewPager(viewPager);
+        }
+
+        TabLayout tabLayout = (TabLayout)findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
         if (findViewById(R.id.movie_detail_container) != null) {
             mTwoPane = true;
 
@@ -45,13 +52,6 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
             }
         } else {
             mTwoPane = false;
-            ViewPager viewPager = (ViewPager)findViewById(R.id.viewpager);
-            if (viewPager != null) {
-                setupViewPager(viewPager);
-            }
-
-            TabLayout tabLayout = (TabLayout)findViewById(R.id.tabs);
-            tabLayout.setupWithViewPager(viewPager);
         }
     }
 
@@ -62,16 +62,11 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_settings) {
-            startActivity(new Intent(this, SettingActivity.class));
-            return true;
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -93,22 +88,25 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
     }
 
     private void setupViewPager(ViewPager viewPager) {
-        mfPopular = new MovieFragment();
-        mfTopRated = new MovieFragment();
+        MovieFragment mfPopular = new MovieFragment();
+        Bundle popularBundle = new Bundle();
+        popularBundle.putString(ORDER_TYPE, "popular");
+        mfPopular.setArguments(popularBundle);
+
+        MovieFragment mfTopRated = new MovieFragment();
+        Bundle topRatedBundle = new Bundle();
+        topRatedBundle.putString(ORDER_TYPE, "top_rated");
+        mfTopRated.setArguments(topRatedBundle);
+
+        MovieFragment mfFavourite = new MovieFragment();
+        Bundle favoriteBundle = new Bundle();
+        favoriteBundle.putBoolean(FILTER_TYPE, true);
+        mfFavourite.setArguments(favoriteBundle);
+
         PagerFragmentAdapter adapter = new PagerFragmentAdapter(getSupportFragmentManager());
         adapter.addFragment(mfPopular, getString(R.string.pref_order_popular_label));
         adapter.addFragment(mfTopRated, getString(R.string.pref_order_toprated_label));
+        adapter.addFragment(mfFavourite, getString(R.string.pref_order_favourite_label));
         viewPager.setAdapter(adapter);
-
-        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                if (position == 0) {
-                    mfPopular.onOrderChange(getString(R.string.pref_order_popular));
-                } else {
-                    mfTopRated.onOrderChange(getString(R.string.pref_order_toprated));
-                }
-            }
-        });
     }
 }

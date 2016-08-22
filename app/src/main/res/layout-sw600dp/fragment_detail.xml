@@ -7,7 +7,8 @@
     <RelativeLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_vertical_margin">
 
         <ImageView
             android:id="@+id/backdrop"
@@ -22,7 +23,6 @@
             android:id="@+id/posterImg"
             android:scaleType="fitXY"
             android:layout_below="@+id/backdrop"
-            android:layout_marginLeft="@dimen/movie_info_margin"
             android:layout_marginTop="@dimen/movie_info_margin"/>
 
         <LinearLayout
@@ -49,12 +49,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/runtime"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:id="@+id/voteAverage"/>
 
@@ -71,21 +65,34 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_marginLeft="@dimen/movie_info_margin"
             android:layout_below="@id/posterImg"/>
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tab_detail"
+        <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/trailer_list_layout"
             android:layout_width="match_parent"
+            android:layout_below="@+id/overview"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_below="@+id/overview"/>
+            android:layout_marginTop="@dimen/activity_vertical_margin">
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/viewpager_detail"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/trailers"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/review_list_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/tab_detail"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+            android:layout_below="@+id/trailer_list_layout"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reviews"/>
+        </LinearLayout>
     </RelativeLayout>
 </ScrollView>

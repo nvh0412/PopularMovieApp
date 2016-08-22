@@ -131,8 +131,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             });
         }
 
-        fetchMovieReviews(MovieContract.MovieEntry.getMovieIdFromUri(mUriData), WebService.getMovieDBService());
-        fetchMovieTrailers(MovieContract.MovieEntry.getMovieIdFromUri(mUriData), WebService.getMovieDBService());
+        if (mUriData != null) {
+            fetchMovieReviews(MovieContract.MovieEntry.getMovieIdFromUri(mUriData), WebService.getMovieDBService());
+            fetchMovieTrailers(MovieContract.MovieEntry.getMovieIdFromUri(mUriData), WebService.getMovieDBService());
+        }
         return rootView;
     }
 
@@ -169,7 +171,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             overviewTV.setText(overview);
 
             String backDropPath = data.getString(COL_BACKDROP_PATH);
-            Picasso.with(getActivity()).load(Constant.MOVIEDB_IMAGE_PATH + backDropPath).into(backDropImageView);
+            Picasso.with(getActivity()).load(Constant.MOVIEDB_BACKDROP_PATH + backDropPath).into(backDropImageView);
         }
     }
 
@@ -190,7 +192,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                         new Action1<List<Trailer>>() {
                             @Override
                             public void call(List<Trailer> trailers) {
-                                if (trailers != null) {
+                                if (trailers != null && getActivity() != null) {
                                     LayoutInflater inflater = LayoutInflater.from(getActivity());
                                     for (final Trailer tl : trailers) {
                                         View tlLayout = inflater.inflate(R.layout.list_item_trailer, null, false);
@@ -203,7 +205,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                                                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + tl.getKey())));
                                             }
                                         });
-
                                         trailerLayout.addView(tlLayout);
                                     }
                                 }
@@ -227,7 +228,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                         new Action1<List<Review>>() {
                             @Override
                             public void call(List<Review> reviews) {
-                                if (reviews != null) {
+                                if (reviews != null && getActivity() != null) {
                                     LayoutInflater inflater = LayoutInflater.from(getActivity());
                                     for (Review rv : reviews) {
                                         View rvLayout = inflater.inflate(R.layout.list_item_review, null, false);
