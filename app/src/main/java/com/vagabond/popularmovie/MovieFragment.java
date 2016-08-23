@@ -1,10 +1,6 @@
 package com.vagabond.popularmovie;
 
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -24,7 +20,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.vagabond.popularmovie.data.MovieContract;
-import com.vagabond.popularmovie.services.MovieService;
+import com.vagabond.popularmovie.sync.MovieSyncAdapter;
 
 import java.util.Set;
 
@@ -123,23 +119,14 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
                     null,
                     null);
         } else {
-            String order = "popular".equals(mOrderType) ? "popularity" : "vote_average";
+            String order = getString(R.string.pref_order_popular).equals(mOrderType) ? "popularity" : "vote_average";
             return new CursorLoader(getActivity(),
                     MovieContract.MovieEntry.CONTENT_URI, null, null, null, order + " DESC");
         }
     }
 
     private void updateMovie() {
-        Intent alarmIntent = new Intent(getActivity(), MovieService.AlarmReceiver.class);
-        alarmIntent.putExtra(MovieService.MOVIE_ORDER_EXTRA, "popular");
-
-        //Wrap in a pending intent which only fires once.
-        PendingIntent pi = PendingIntent.getBroadcast(getActivity(), 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
-
-        AlarmManager am=(AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
-
-        //Set the AlarmManager to wake up the system.
-        am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000 , pi);
+        MovieSyncAdapter.syncImmediately(getActivity());
     }
 
     private String makeQueryMovieID(Set<String> keySet) {
@@ -157,11 +144,6 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mMovieAdapter.swapCursor(data);
-    }
-
-    public void onOrderTypeChanged() {
-        updateMovie();
-        mMovieAdapter.swapCursor(null);
     }
 
     @Override

@@ -82,6 +82,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private boolean isTwoPanel;
     private LinearLayout reviewLayout;
     private LinearLayout trailerLayout;
+    private Button addFavouriteBtn;
 
     public DetailFragment() { }
 
@@ -119,14 +120,22 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         voteAverageTV = (TextView) rootView.findViewById(R.id.voteAverage);
         overviewTV = (TextView) rootView.findViewById(R.id.overview);
         titleTV = (TextView) rootView.findViewById(R.id.title);
-        Button addFavouriteBtn = (Button) rootView.findViewById(R.id.fav_btn);
+        addFavouriteBtn = (Button) rootView.findViewById(R.id.fav_btn);
 
         if (addFavouriteBtn != null) {
             addFavouriteBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Button addFavBtn = (Button)v;
+                    String movieID = MovieContract.MovieEntry.getMovieIdFromUri(mUriData);
                     SharedPreferences favPref = getActivity().getSharedPreferences(FAV_PREFS, 0);
-                    favPref.edit().putBoolean(MovieContract.MovieEntry.getMovieIdFromUri(mUriData), true).apply();
+                    if (favPref.getBoolean(movieID, false)) {
+                        favPref.edit().remove(movieID).apply();
+                        addFavBtn.setText(getString(R.string.add_favorite));
+                    } else {
+                        favPref.edit().putBoolean(movieID, true).apply();
+                        addFavBtn.setText(getString(R.string.remove_favorite));
+                    }
                 }
             });
         }
@@ -172,6 +181,11 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
             String backDropPath = data.getString(COL_BACKDROP_PATH);
             Picasso.with(getActivity()).load(Constant.MOVIEDB_BACKDROP_PATH + backDropPath).into(backDropImageView);
+
+            SharedPreferences favPref = getActivity().getSharedPreferences(FAV_PREFS, 0);
+            if (favPref.getBoolean(MovieContract.MovieEntry.getMovieIdFromUri(mUriData), false)) {
+                addFavouriteBtn.setText(getString(R.string.remove_favorite));
+            }
         }
     }
 

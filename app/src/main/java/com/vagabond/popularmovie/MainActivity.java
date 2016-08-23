@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.facebook.stetho.Stetho;
+import com.vagabond.popularmovie.sync.MovieSyncAdapter;
 
 public class MainActivity extends AppCompatActivity implements MovieFragment.Callback {
 
@@ -53,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
         } else {
             mTwoPane = false;
         }
+
+        MovieSyncAdapter.initializeSyncAdapter(this);
     }
 
     @Override
@@ -90,12 +93,12 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
     private void setupViewPager(ViewPager viewPager) {
         MovieFragment mfPopular = new MovieFragment();
         Bundle popularBundle = new Bundle();
-        popularBundle.putString(ORDER_TYPE, "popular");
+        popularBundle.putString(ORDER_TYPE, getString(R.string.pref_order_popular));
         mfPopular.setArguments(popularBundle);
 
         MovieFragment mfTopRated = new MovieFragment();
         Bundle topRatedBundle = new Bundle();
-        topRatedBundle.putString(ORDER_TYPE, "top_rated");
+        topRatedBundle.putString(ORDER_TYPE, getString(R.string.pref_order_toprated));
         mfTopRated.setArguments(topRatedBundle);
 
         MovieFragment mfFavourite = new MovieFragment();

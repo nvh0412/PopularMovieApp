@@ -16,4 +16,7 @@
     <string name="reviews">REVIEWS</string>
     <string name="trailers">TRAILERS</string>
     <string name="add_favorite">Add Favorite</string>
+    <string name="sync_account_type">com.vagabond.popularmovie</string>
+    <string name="content_authority">com.vagabond.popularmovie.app</string>
+    <string name="remove_favorite">Remove Favorite</string>
 </resources>
