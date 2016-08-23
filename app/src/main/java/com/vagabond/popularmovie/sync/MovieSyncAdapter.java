@@ -33,7 +33,7 @@ import rx.schedulers.Schedulers;
  * Created by HoaNV on 8/23/16.
  */
 public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
-    public static final int SYNC_INTERVAL = 30;
+    public static final int SYNC_INTERVAL = 60 * 180;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
     private static final String LOG_TAG = MovieSyncAdapter.class.getSimpleName();
 
