@@ -36,6 +36,9 @@
         <provider
             android:authorities="com.vagabond.popularmovie.app"
             android:name=".MovieProvider" />
+
+        <service android:name=".services.MovieService"/>
+        <receiver android:name=".services.MovieService$AlarmReceiver"/>
     </application>
 
 </manifest>

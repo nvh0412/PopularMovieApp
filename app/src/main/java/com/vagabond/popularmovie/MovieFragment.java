@@ -1,7 +1,10 @@
 package com.vagabond.popularmovie;
 
 
-import android.content.ContentValues;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -11,7 +14,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,22 +22,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.vagabond.popularmovie.data.MovieContract;
-import com.vagabond.popularmovie.model.Movie;
-import com.vagabond.popularmovie.model.MovieData;
-import com.vagabond.popularmovie.services.MovieDBService;
-import com.vagabond.popularmovie.services.WebService;
+import com.vagabond.popularmovie.services.MovieService;
 
-import java.util.List;
 import java.util.Set;
-import java.util.Vector;
-
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 
 /**
@@ -115,69 +106,10 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
-            updateMovies(mOrderType);
+            updateMovie();
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void updateMovies(String orderType) {
-        MovieDBService movieDBService = WebService.getMovieDBService();
-        movieDBService.getMovieData(orderType, BuildConfig.MOVIE_DB_API_KEY)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(new Func1<MovieData, List<Movie>>() {
-                    @Override
-                    public List<Movie> call(MovieData movieData) {
-                        return movieData.getResults();
-                    }
-                })
-                .subscribe(
-                    new Action1<List<Movie>>() {
-                        @Override
-                        public void call(List<Movie> movieList) {
-                            Vector<ContentValues> cvVector = new Vector<>(movieList.size());
-
-                            for (Movie movie : movieList) {
-                                ContentValues cv = new ContentValues();
-                                cv.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, movie.getId());
-                                cv.put(MovieContract.MovieEntry.COLUMN_TITLE, movie.getTitle());
-                                cv.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, movie.getOriginalTitle());
-                                cv.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, movie.getOverview());
-                                cv.put(MovieContract.MovieEntry.COLUMN_ADULT, movie.getAdult());
-                                cv.put(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH, movie.getBackdropPath());
-                                cv.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH, movie.getPosterPath());
-                                cv.put(MovieContract.MovieEntry.COLUMN_POPULARITY, movie.getPopularity());
-                                cv.put(MovieContract.MovieEntry.COLUMN_VOTE_COUNT, movie.getVoteCount());
-                                cv.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.getVoteAverage());
-                                cv.put(MovieContract.MovieEntry.COLUMN_RUNTIME, movie.getRuntime());
-                                cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, movie.getReleaseDate());
-                                cvVector.add(cv);
-                            }
-
-                            int inserted = 0;
-                            if (movieList.size() > 0) {
-                                ContentValues[] cvArray = new ContentValues[cvVector.size()];
-                                cvVector.toArray(cvArray);
-                                inserted = getActivity().getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
-                            }
-
-                            Log.d(LOG_TAG, "Sync Data complete. " + inserted + " inserted.");
-                        }
-                    },
-                    new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable e) {
-                            Log.e(LOG_TAG, "Error: Can't sync data from API", e);
-                            handleError(e);
-                        }
-                    }
-                );
-    }
-
-    private void handleError(Throwable e) {
-        Log.e(LOG_TAG, "Can't fetch movie list", e);
-        Toast.makeText(getActivity(), "Something went wrong, please check your internet connection and try again!", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -197,6 +129,19 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
         }
     }
 
+    private void updateMovie() {
+        Intent alarmIntent = new Intent(getActivity(), MovieService.AlarmReceiver.class);
+        alarmIntent.putExtra(MovieService.MOVIE_ORDER_EXTRA, "popular");
+
+        //Wrap in a pending intent which only fires once.
+        PendingIntent pi = PendingIntent.getBroadcast(getActivity(), 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
+
+        AlarmManager am=(AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
+
+        //Set the AlarmManager to wake up the system.
+        am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000 , pi);
+    }
+
     private String makeQueryMovieID(Set<String> keySet) {
         StringBuilder str = new StringBuilder();
         for (String key : keySet) {
@@ -212,6 +157,11 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mMovieAdapter.swapCursor(data);
+    }
+
+    public void onOrderTypeChanged() {
+        updateMovie();
+        mMovieAdapter.swapCursor(null);
     }
 
     @Override
