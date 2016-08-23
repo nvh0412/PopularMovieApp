@@ -20,10 +20,13 @@
         android:layout_marginLeft="@dimen/movie_info_margin">
 
         <TextView
+            android:fontFamily="sans-serif-condensed"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/title"/>
+            android:id="@+id/title"
+            android:textColor="@color/black"
+            android:textSize="24sp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -41,12 +44,18 @@
             android:id="@+id/fav_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add"/>
+            android:padding="@dimen/movie_info_margin"
+            android:background="@drawable/touch_selector"
+            android:text="@string/add_favorite"
+            android:textColor="@color/white"/>
     </LinearLayout>
 
     <TextView
+        android:fontFamily="sans-serif-condensed"
         android:id="@+id/overview"
         android:layout_width="match_parent"
+        android:textColor="@color/grey_700"
+        android:textSize="16sp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:textAppearance="?android:attr/textAppearanceMedium"
@@ -60,10 +69,24 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin">
 
-        <TextView
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/trailers"/>
+            android:layout_marginBottom="@dimen/activity_vertical_margin">
+            <ImageView
+                android:src="@drawable/ic_ondemand_video_black_24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/trailers"/>
+            <TextView
+                android:fontFamily="sans-serif-condensed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/trailers"
+                android:layout_marginLeft="@dimen/movie_info_margin"
+                android:textColor="@color/black"/>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -73,10 +96,23 @@
         android:layout_below="@+id/trailer_list_layout"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin">
-
-        <TextView
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/reviews"/>
+            android:layout_marginBottom="@dimen/activity_vertical_margin">
+            <ImageView
+                android:src="@drawable/ic_rate_review_black_24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/reviews"/>
+            <TextView
+                android:fontFamily="sans-serif-condensed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reviews"
+                android:layout_marginLeft="@dimen/movie_info_margin"
+                android:textColor="@color/black"/>
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

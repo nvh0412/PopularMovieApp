@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true"
+          android:drawable="@color/movie_dark_black" />
+    <item android:state_activated="true"
+          android:drawable="@color/movie_dark_black" />
+    <!-- Default, "just hangin' out" state. -->
+    <item android:drawable="@color/movie_light_black" />
+</selector>
