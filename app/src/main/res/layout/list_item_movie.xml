@@ -1,12 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
-    <ImageView
-        android:id="@+id/list_item_movie_poster"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        android:minHeight="277dp"/>
-</FrameLayout>
+<android.support.v7.widget.CardView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:card_view="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/list_item_movie_cardviewr"
+  android:layout_gravity="center"
+  android:layout_width="match_parent"
+  android:layout_marginLeft="@dimen/side_margin"
+  android:layout_marginRight="@dimen/side_margin"
+  android:layout_marginBottom="@dimen/side_margin"
+  android:layout_height="wrap_content"
+  card_view:cardCornerRadius="2dp">
+  <com.vagabond.popularmovie.SixteenNineImageView
+    android:id="@+id/list_item_movie_poster"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:scaleType="centerCrop"/>
+  <LinearLayout
+    android:layout_gravity="bottom"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/black"
+    android:alpha="0.54"
+    >
+    <TextView
+      android:id="@+id/list_item_movie_title"
+      android:fontFamily="sans-serif-condensed"
+      android:textStyle="bold"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:textSize="@dimen/primary_text"
+      android:textColor="@color/white"
+      android:paddingTop="@dimen/primary_text_padding_top"
+      android:paddingLeft="@dimen/primary_text_padding"
+      android:paddingRight="@dimen/primary_text_padding"
+      android:paddingBottom="@dimen/primary_text_padding"/>
+  </LinearLayout>
+
+</android.support.v7.widget.CardView>

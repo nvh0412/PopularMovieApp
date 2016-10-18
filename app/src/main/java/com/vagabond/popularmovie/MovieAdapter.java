@@ -2,11 +2,12 @@ package com.vagabond.popularmovie;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.widget.CursorAdapter;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.vagabond.popularmovie.data.MovieContract;
@@ -16,41 +17,86 @@ import com.vagabond.popularmovie.model.Movie;
 /**
  * Created by HoaNV on 7/19/16.
  */
-public class MovieAdapter extends CursorAdapter {
-    private final static String LOG_TAG = MovieAdapter.class.getSimpleName();
-    private ImageViewHolder mHolder;
+public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ImageViewHolder> {
+  private final static String LOG_TAG = MovieAdapter.class.getSimpleName();
 
-    public MovieAdapter(Context context, Cursor c, int flags) {
-        super(context, c, flags);
-    }
+  private Cursor mCursor;
+  private Context mContext;
+  private MovieAdapterOnClickHandler mClickHandler;
 
-    public class ImageViewHolder {
-        ImageView imageView;
-    }
+  public MovieAdapter(Context mContext, MovieAdapterOnClickHandler mh) {
+    this.mContext = mContext;
+    this.mClickHandler = mh;
+  }
 
-    private Movie convertCursorToMovie(Cursor cursor) {
-        Movie movie = new Movie();
-        int idx_poster_path = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH);
-        movie.setPosterPath(cursor.getString(idx_poster_path));
-        return movie;
+  public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    ImageView imageView;
+    TextView titleTV;
+
+    public ImageViewHolder(View itemView) {
+      super(itemView);
+      imageView = (ImageView) itemView.findViewById(R.id.list_item_movie_poster);
+      titleTV = (TextView) itemView.findViewById(R.id.list_item_movie_title);
+      itemView.setOnClickListener(this);
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return LayoutInflater.from(context).inflate(R.layout.list_item_movie, parent, false);
+    public void onClick(View v) {
+      int adapterPosition = getAdapterPosition();
+      mCursor.moveToPosition(adapterPosition);
+      mClickHandler.onClick(this);
     }
+  }
 
-    @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        Movie movie = convertCursorToMovie(cursor);
+  private Movie convertCursorToMovie(Cursor cursor) {
+    Movie movie = new Movie();
+    movie.setPosterPath(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH)));
+    movie.setTitle(cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+    return movie;
+  }
 
-        mHolder = (ImageViewHolder) view.getTag();
-        if (mHolder == null) {
-            mHolder = new ImageViewHolder();
-            mHolder.imageView = (ImageView) view.findViewById(R.id.list_item_movie_poster);
-        }
-
-        Picasso.with(mContext).load(Constant.MOVIEDB_IMAGE_PATH + movie.getPosterPath()).into(mHolder.imageView);
-        view.setTag(mHolder);
+  @Override
+  public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    if (parent instanceof RecyclerView) {
+      View view = LayoutInflater.from(parent.getContext()).inflate(
+        mContext.getResources().getBoolean(R.bool.multi_column)
+          ? R.layout.list_item_movie
+          : R.layout.list_item_movie, parent, false);
+      view.setFocusable(true);
+      return new ImageViewHolder(view);
+    } else {
+      throw new RuntimeException("Not bound to RecyclerViewSelection");
     }
+  }
+
+  @Override
+  public void onBindViewHolder(ImageViewHolder holder, int position) {
+    mCursor.moveToPosition(position);
+
+    Movie movie = convertCursorToMovie(mCursor);
+
+    Picasso.with(mContext).load(Constant.MOVIEDB_BACKDROP_PATH + movie.getPosterPath()).into(holder.imageView);
+    holder.titleTV.setText(movie.getTitle());
+  }
+
+  @Override
+  public int getItemCount() {
+    if (null == mCursor) {
+      return 0;
+    }
+    return mCursor.getCount();
+  }
+
+  public void swapCursor(Cursor newCursor) {
+    mCursor = newCursor;
+    notifyDataSetChanged();
+  }
+
+  public Cursor getCursor() {
+    return mCursor;
+  }
+
+  public static interface MovieAdapterOnClickHandler {
+    void onClick(ImageViewHolder vh);
+  }
 }

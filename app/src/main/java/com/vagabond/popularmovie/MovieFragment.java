@@ -10,14 +10,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
 
 import com.vagabond.popularmovie.data.MovieContract;
 import com.vagabond.popularmovie.sync.MovieSyncAdapter;
@@ -63,24 +63,28 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_movie, container, false);
+      View rootView = inflater.inflate(R.layout.fragment_movie, container, false);
+      mMovieAdapter = new MovieAdapter(getContext(), new MovieAdapter.MovieAdapterOnClickHandler() {
+        @Override
+        public void onClick(MovieAdapter.ImageViewHolder vh) {
+          Cursor cursor = mMovieAdapter.getCursor();
+          if (null != cursor && cursor.moveToPosition(vh.getAdapterPosition())) {
+            ((Callback)getActivity()).onItemSelected(MovieContract.MovieEntry.buildMovieWithMovieId(cursor.getLong(COL_MOVIE_ID)));
+          }
+        }
+      });
 
-        mMovieAdapter = new MovieAdapter(getActivity(), null, 0);
+      RecyclerView mRecycleView = (RecyclerView) rootView.findViewById(R.id.movie_recycler_view);
+      mRecycleView.setLayoutManager(new LinearLayoutManager(getActivity()));
+      mRecycleView.setAdapter(mMovieAdapter);
 
-        GridView mGridView = (GridView) rootView.findViewById(R.id.movie_gridview);
-        mGridView.setAdapter(mMovieAdapter);
+//        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-                if (null != cursor && cursor.moveToPosition(position)) {
-                    ((Callback)getActivity()).onItemSelected(MovieContract.MovieEntry.buildMovieWithMovieId(cursor.getLong(COL_MOVIE_ID)));
-                }
-            }
-        });
+//        });
 
-        return rootView;
+      return rootView;
     }
 
     @Override
